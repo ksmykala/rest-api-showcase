@@ -13,6 +13,7 @@ import models   # noqa
 from resources.item import blp as ItemBlueprint
 from resources.store import blp as StoreBlueprint
 from resources.tag import blp as TagBlueprint
+from resources.user import blp as UserBlueprint
 
 
 def create_logger():
@@ -48,7 +49,7 @@ def create_app(db_url=None):
 
     api = Api(app)
 
-    app.config['JWT_SECRET'] == os.getenv('JWT_SECRET')
+    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET')
     jwt = JWTManager(app)
 
     with app.app_context():
@@ -57,6 +58,7 @@ def create_app(db_url=None):
     api.register_blueprint(ItemBlueprint)
     api.register_blueprint(StoreBlueprint)
     api.register_blueprint(TagBlueprint)
+    api.register_blueprint(UserBlueprint)
 
     app.logger.info('App created successfully.')
 
