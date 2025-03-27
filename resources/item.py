@@ -1,7 +1,8 @@
 from flask import current_app
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from sqlalchemy.exc import SQLAlchemyError
+from flask_jwt_extended import jwt_required
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from db import db
 from models import ItemModel
@@ -58,6 +59,7 @@ class ItemList(MethodView):
     def get(self):
         return ItemModel.query.all()
 
+    @jwt_required()
     @blp.arguments(ItemSchema)
     @blp.response(201, ItemSchema)
     def post(self, item_data):
@@ -69,11 +71,14 @@ class ItemList(MethodView):
             current_app.logger.info(
                 f'Item created successfully: [{item.id}] {item.name} '
                 f'(${item.price})')
-        except SQLAlchemyError:
+        except IntegrityError:
+            db.session.rollback()
+            abort(409, message=f'Item already exists: {item_data}')
+        except SQLAlchemyError as e:
             current_app.logger.info(
                 f'Item created successfully: [{item.id}] {item.name} '
                 f'(${item.price})')
-            abort(500, message='An error occurred while adding the item.',
-                  logger=current_app.logger)
+            db.session.rollback()
+            abort(500, message=f'An error occurred while adding the item: {e}')
 
         return item, 201
