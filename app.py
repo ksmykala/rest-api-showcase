@@ -18,7 +18,7 @@ from resources.user import blp as UserBlueprint
 
 def create_logger():
     logging_handler = RotatingFileHandler(
-        'logs/app.log', maxBytes=10000, backupCount=5)
+        'logs/app.log', maxBytes=10485760, backupCount=5)
     logging_handler.setLevel(logging.INFO)
 
     log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -51,6 +51,15 @@ def create_app(db_url=None):
 
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET')
     jwt = JWTManager(app)
+
+    @jwt.additional_claims_loader
+    def add_claims_to_access_token(identity):
+        # TODO: Add logic to check if the user is an admin from db
+        if identity == '1':
+            app.logger.info(f'User {identity} is admin')
+            return {'is_admin': True}
+        app.logger.info(f'User {identity} is not admin')
+        return {'is_admin': False}
 
     @jwt.expired_token_loader
     def expired_token_callback(jwt_header, jwt_payload):
