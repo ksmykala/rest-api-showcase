@@ -66,11 +66,6 @@ class ItemList(MethodView):
     @jwt_required()
     @blp.response(200, ItemSchema(many=True))
     def get(self):
-        
-        jwt = get_jwt()
-        current_app.logger.info(f'jwt: {jwt}')
-        if not jwt.get('is_admin'):
-            abort(401, message='Admin privilege required.')
         return ItemModel.query.all()
 
     @jwt_required()
