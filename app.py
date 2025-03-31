@@ -3,6 +3,7 @@ import os
 from flask import Flask, jsonify
 from flask_smorest import Api
 from flask_jwt_extended import JWTManager
+from flask_migrate import Migrate
 
 import logging
 from logging.handlers import RotatingFileHandler
@@ -47,6 +48,7 @@ def create_app(db_url=None):
         "DATABASE_URL", "sqlite:///data.db")
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
+    migrate = Migrate(app, db) # noqa
 
     api = Api(app)
 
@@ -114,9 +116,6 @@ def create_app(db_url=None):
                     }),
             401
         )
-
-    with app.app_context():
-        db.create_all()
 
     api.register_blueprint(ItemBlueprint)
     api.register_blueprint(StoreBlueprint)
