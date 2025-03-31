@@ -73,11 +73,13 @@ class UserLogout(MethodView):
 
 @blp.route('/user/<int:user_id>')
 class User(MethodView):
+    @jwt_required()
     @blp.response(200, UserSchema)
     def get(self, user_id):
         user = UserModel.query.get_or_404(user_id)
         return user
 
+    @jwt_required()
     def delete(self, user_id):
         user = UserModel.query.get_or_404(user_id)
         db.session.delete(user)
