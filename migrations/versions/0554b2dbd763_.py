@@ -1,7 +1,7 @@
-"""empty message
+"""Create initial database schema
 
 Revision ID: 0554b2dbd763
-Revises: 
+Revises:
 Create Date: 2025-03-31 06:38:15.907142
 
 """

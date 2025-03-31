@@ -4,6 +4,7 @@ from flask import Flask, jsonify
 from flask_smorest import Api
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
+from dotenv import load_dotenv
 
 import logging
 from logging.handlers import RotatingFileHandler
@@ -33,6 +34,7 @@ def create_logger():
 
 def create_app(db_url=None):
     app = Flask(__name__)
+    load_dotenv()
 
     logging_handler = create_logger()
     app.logger.addHandler(logging_handler)

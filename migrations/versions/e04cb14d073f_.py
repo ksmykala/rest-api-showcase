@@ -1,4 +1,4 @@
-"""empty message
+"""Add description column to items table
 
 Revision ID: e04cb14d073f
 Revises: 0554b2dbd763
