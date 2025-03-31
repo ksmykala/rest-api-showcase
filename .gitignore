@@ -1,4 +1,7 @@
 /.venv
+/.vscode
 __pycache__
 /logs/
-/instance/
+/instance/data.db
+*.pyc
+.DS_Store
