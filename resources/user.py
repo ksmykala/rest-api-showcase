@@ -1,6 +1,6 @@
 import os
 import requests
-
+from flask import current_app
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from passlib.hash import pbkdf2_sha256
@@ -8,11 +8,12 @@ from flask_jwt_extended import (
     create_access_token, create_refresh_token, get_jwt_identity,
     jwt_required, get_jwt
 )
+from sqlalchemy import or_
 
 from db import db
 from blocklist import BLOCKLIST
 from models import UserModel
-from schemas import UserSchema
+from schemas import UserSchema, UserRegistrationSchema
 
 
 blp = Blueprint('Users', 'users', description='Operations on users')
@@ -23,7 +24,7 @@ def send_simple_message(to, subject, body):
     return requests.post(
        f"https://api.mailgun.net/v3/{domain}/messages",
        auth=("api", os.getenv('MAILGUN_API_KEY')),
-       data={"from": f"Krzysztof Smykała <mailgun@{domain}>",
+       data={"from": f"Krzysztof Smykała <postmaster@{domain}>",
              "to": [to],
              "subject": subject,
              "text": body})
@@ -31,19 +32,37 @@ def send_simple_message(to, subject, body):
 
 @blp.route('/register')
 class UserRegister(MethodView):
-    @blp.arguments(UserSchema)
+    @blp.arguments(UserRegistrationSchema)
     def post(self, user_data):
         if UserModel.query.filter(
-                UserModel.username == user_data['username']).first():
-            abort(400, message='User already exists.')
+            or_(
+                UserModel.username == user_data['username'],
+                UserModel.email == user_data['email']
+            )
+        ).first():
+            abort(
+                409,
+                message='A user with that username or email already exists.'
+            )
 
         user = UserModel(
             username=user_data['username'],
+            email=user_data['email'],
             password=pbkdf2_sha256.hash(user_data['password'])
         )
 
         db.session.add(user)
         db.session.commit()
+
+        email_resp = send_simple_message(
+            user_data['email'],
+            'Welcome to our service',
+            f'Hi {user.username}. Thank you for registering!'
+        )
+        current_app.logger.info(
+            f'''Email sent to {user_data['email']}: '''
+            f'''({email_resp.status_code}): {email_resp.text}'''
+        )
 
         return {'message': 'User created successfully.'}, 201
 
