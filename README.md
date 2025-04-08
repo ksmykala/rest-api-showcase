@@ -133,6 +133,11 @@ The API provides, among others, the following endpoints:
 
 *Note: Replace `<access_token>` with the token obtained from the login endpoint.*
 
+## REDIS and RQ
+To chceck your worker (sending email on registration) is  working correctly you can use
+`docker exec -w /app DOCKER_API_CONTAINER_NAME sh -c "rq worker -u URL_TO_YOUR_REDIS_DB emails" -f`
+
+
 ## Acknowledgements
 
 This repository was created based on a course "REST APIs with Flask and Python" conducted by [Jose Salvatierra](https://github.com/jslvtr). Many thanks to the author for providing valuable educational content that inspired the development of this project.
